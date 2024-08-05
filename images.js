@@ -300,6 +300,9 @@
       return baseUrl + imageSrc;
     }
 
+    let originalContent;
+    let currentType;
+
     function loadImages() {
       images.forEach(image => {
         const imgElements = document.querySelectorAll(`img.${image.class}`);
@@ -309,3 +312,104 @@
         });
       });
     }
+
+
+    function toggleCharacters(type) {
+      const table = document.getElementById('EffectCategory');
+      const iconCell = this.parentNode;
+      const isExpanded = iconCell.dataset.expanded === 'true';
+
+      const characterSets = {
+        e_incr_fin_CriHit_dmg: ['Cheongmyeong', 'OiKatzo', 'Dellons'],
+        e_incr_fin_ATK: ['ArthurPencilgon', 'DokjaKim', 'KyoKusanagi', 'Eileene'],
+        e_incr_CriHit_rate: ['Vanessa', 'Sunraku', 'Biya', 'Rachel'],
+        e_decr_fin_Def: ['Reginleif', 'Lene', 'XiaoQiao', 'Ingrid'],
+        e_decr_fin_Eva: ['Platin', 'Soi', 'XiangYu', 'MaiShiranui'],
+        e_incr_ATK_speed: ['Teo', 'Gabimaru'],
+        e_incr_weakATK_rate: ['SunWukong', 'Sagiri'],
+        e_incr_fin_weakATK_dmg: ['Yeonhee', 'Yuzuriha'],
+        e_Karma: ['Karma'],
+        e_LuBu: ['LuBu'],
+        e_Kyle: ['Kyle'],
+        e_Shane: ['ShaneSwimsuit']
+      };
+
+      const textSets = {
+        e_incr_fin_CriHit_dmg: ['暴傷20%', '暴傷20%', '暴傷20%'],
+        e_incr_fin_ATK: ['終攻25%', '終攻25%', '終攻25%', '終攻25%'],
+        e_incr_CriHit_rate: ['暴率24%', '暴率20%', '暴率20%', '暴率20%'],
+        e_decr_fin_Def: ['降防50%', '降防25%', '降防25%', '降防25%'],
+        e_decr_fin_Eva: ['降迴60%', '降迴50%', '降迴50%', '降迴40%'],
+        e_incr_ATK_speed: ['攻速24%', '攻速20%'],
+        e_incr_weakATK_rate: ['弱點24%', '弱點20%'],
+        e_incr_fin_weakATK_dmg: ['弱傷24%', '弱傷20%'],
+        e_Karma: ['報應30%'],
+        e_LuBu: ['受傷30%'],
+        e_Kyle: ['降抗暴24%'],
+        e_Shane: ['額外率24%']
+      };
+
+      if (!isExpanded) {
+        originalContent = table.innerHTML;
+        currentType = type;
+        const characters = characterSets[type];
+        const texts = textSets[type];
+
+        // 清除表格內容
+        table.querySelectorAll('td').forEach(td => {
+          td.innerHTML = '';
+        });
+
+        // 顯示新的內容
+        characters.forEach((character, index) => {
+          const td = table.rows[Math.floor(index / 4)].cells[index % 4];
+          td.innerHTML = `
+                <div class="image-container">
+                    <img class="${character}">
+                    <p class="P_effect_11">${texts[index]}</p>
+                </div>
+            `;
+        });
+
+        // 在左下角添加返回按鈕
+        const lastRow = table.rows[table.rows.length - 1];
+        const returnCell = lastRow.cells[0];
+        returnCell.innerHTML = `<img id="returnButton" src="${getFullImageUrl('returnButton.png')}" alt="返回">`;
+        document.getElementById('returnButton').addEventListener('click', returnToOriginal);
+        iconCell.dataset.expanded = 'true';
+
+      } else {
+        returnToOriginal();
+      }
+
+      loadImages();
+    }
+
+    function returnToOriginal() {
+      const table = document.getElementById('EffectCategory');
+      table.innerHTML = originalContent;
+      document.getElementById(`${currentType}Toggle`).parentNode.dataset.expanded = 'false';
+      addToggleListeners();
+    }
+
+    function addToggleListeners() {
+      const toggleTypes = [
+        'e_incr_fin_CriHit_dmg', 'e_incr_fin_ATK', 'e_incr_CriHit_rate', 'e_decr_fin_Def', 'e_decr_fin_Eva',
+        'e_incr_ATK_speed', 'e_incr_weakATK_rate', 'e_incr_fin_weakATK_dmg',
+        'e_Karma', 'e_LuBu', 'e_Kyle', 'e_Shane'
+      ];
+
+      toggleTypes.forEach(type => {
+        const element = document.getElementById(`${type}Toggle`);
+        if (element) {
+          element.addEventListener('click', function() {
+            toggleCharacters.call(this, type);
+          });
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadImages();
+      addToggleListeners();
+    });
